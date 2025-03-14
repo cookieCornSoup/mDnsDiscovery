@@ -3,6 +3,18 @@ import 'package:bonsoir/bonsoir.dart';
 import 'package:mdns_connection_test/helpers/network_helpers.dart';
 import '../constants/network_constants.dart';
 
+/// ## ViewModel: mDNS Discovery 관리
+///
+/// `MdnsDiscoveryViewModel`은 `Bonsoir`를 사용하여 네트워크 내의 mDNS 서비스를 검색하고 관리합니다.
+/// `Provider`와 연동되어 UI 업데이트를 자동으로 수행합니다.
+///
+/// ### 주요 기능:
+/// - `startDiscovery()`: mDNS 검색 시작
+/// - `stopDiscovery()`: 검색 중지
+/// - `setServiceType()`: TCP 검색 타입 변경
+/// - `discoveredServices`: 검색된 서비스 목록
+///
+/// 🔥 **검색 중에도 TCP 타입 변경 가능**
 class MdnsDiscoveryViewModel extends ChangeNotifier {
   final Map<String, List<BonsoirService>> _discoveredServices = {};
   BonsoirDiscovery? _discovery;
@@ -73,7 +85,10 @@ class MdnsDiscoveryViewModel extends ChangeNotifier {
     bool isDuplicate = services.any((existingService) =>
         existingService.name == service.name &&
         existingService.port == service.port &&
-        existingService.attributes.toString() == service.attributes.toString());
+        existingService.attributes.toString() == service.attributes.toString() &&
+        (existingService is ResolvedBonsoirService
+            ? existingService.host == (service as ResolvedBonsoirService).host
+            : true)); // 🔥 `host` 비교 추가
 
     if (!isDuplicate) {
       services.add(service);
